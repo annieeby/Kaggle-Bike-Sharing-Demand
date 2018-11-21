@@ -49,8 +49,6 @@ pairs(train %>% slice(1:100))
 ################################ INITIAL INSIGHTS ################################ 
 ##################################################################################
 
-# Question: Create plots with which to observe the following:	
-
 # User behavior shows positive correlation with good weather
 
 ggplot(train, aes(x = temp, y = count, col = weather)) +
@@ -88,13 +86,13 @@ counts <- train %>%
   slice(sample(1:nrow, train, 100))%>%
   select("casual", "registered", "count")
 # Question: Error in slice_impl(.data, dots) : Evaluation error: NA/NaN argument.
-# Still allows counts to run below, but gives the same data as slice(1:100)
+# Still allows counts to run below, but gives the same data as if I just do slice(1:100)
 
 # view table
 counts
 
 # make a table of the proportions of casual, registered, and total (count), users 
-# prop.table(table(counts))
+prop.table(table(counts))
 # Question: How do I get a one-row summary of the proportions of each variable?
 
 ################################# COMBINE DATAFRAMES ############################# 
