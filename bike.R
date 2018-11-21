@@ -146,7 +146,7 @@ glimpse(combi)
 # tried defining dayparts as both integers and strings.
 glimpse(combi$daypart)
 
-############################## COMBINE DATAFRAMES ################################
+############################## SPLIT DATAFRAMES ################################
 
 # Split the test and training sets back into their original states
 train <- combi[1:10886,]
