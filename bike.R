@@ -39,11 +39,14 @@ plot(train$count)
 # Use the	pairs	command to plot	all	the	variables	of the data set against each	other.	
 pairs(train)
 
+# Question: what other plot methods can I use to get a good overview of the data?
+
 ##################################################################################
 ################################ INITIAL INSIGHTS ################################ 
 ##################################################################################
 
 
+# Borrowed observation from another user. Question: How would I observe this?
 # There	are	some loose connections to the weather variables:	
 # Extreme	weather	seems	to	reduce	the	bike rentals.	But	no	variable
 # in the graph shows a linear	connection to	the	count.
@@ -67,8 +70,8 @@ pairs(train)
 ##################################################################################
 
 # view our three dependent variables
-counts <- train %>%
-  select("casual", "registered", "count")
+# counts <- train %>%
+#  select("casual", "registered", "count")
 
 # Question: what is wrong with this? For one thing, it takes about three minutes to appear
 
@@ -91,10 +94,12 @@ combi <- rbind(train, test)
 
 # Observe combi
 str(combi)
+# Question: What's up with this weird structure at the bottom?
 
 #################################### DATE/TIME ###################################
 
 # Use lubridate with datetime to create new variables: month, weekday, and hour
+# Question: I do not think I am actually using lubridate here?
 combi$datetime <- strptime(combi$datetime, format="%Y-%m-%d %H:%M:%S")
 combi$month <- month(combi$datetime)         # Question: Error: could not find function "month"
 combi$day <- day(combi$datetime)
@@ -141,6 +146,7 @@ glimpse(combi)
 # tried defining dayparts as both integers and strings.
 glimpse(combi$daypart)
 
+############################## COMBINE DATAFRAMES ################################
 
 # Split the test and training sets back into their original states
 train <- combi[1:10886,]
@@ -149,6 +155,8 @@ test <- combi[10887:17379,]
 ##################################################################################
 ############################## FEATURE ENGINEERING ###############################
 ##################################################################################
+
+# Question: None of these feature engineering ideas have been executed - want to learn how.
 
 # Group registered and casual users by time, day, holiday, etc. 
 # Create better plots to show different usage for registered vs casual users. 
@@ -213,24 +221,39 @@ summary(aggregate(train[,"count"],list(train$day),mean))
 fit <- rpart(count ~ season + holiday + workingday + weather + workingday + weather + temp + atemp + humidity + windspeed + day + hour,
              data=train,
              method="class")
+# Question: Error in eval(expr, envir, enclos) : objects 'day', 'hour' not found
+
 #plot
+rpart.plot(fit)
+# Question: Error: box.palette: c("#F7FCF5", "#EEF8EA", "#E5F5E0",
+# "#D6EFD0", "#C7E9C0", "#B4E1AD", "#A1D99B", "#8ACE88", "#74C476") is neither a
+# color nor a palette. Try something like box.palette="blue" or
+# box.palette="Blues". The predefined palettes are (with an optional "-"
+# prefix): Grays Greys Greens Blues Browns Oranges Reds Purples Gy Gn Bu Bn Or
+# Rd Pu (alternative names for the above palettes) BuGn BuBn GnRd etc.
+# (two-color diverging palettes: any combination of two palettes) RdYlGn GnYlRd
+# BlGnYl YlGnBl (three color palettes)
+
 plot(fit)
+# Error in plot.rpart(fit) : fit is not a tree, just a root
 text(fit)
+# Question: Error in text.rpart(fit) : fit is not a tree, just a root
 
 # build model
 fit.tree <- forest(fit, data=train)
+# Question: Error: could not find function "forest"
 
 # run model against test data set
-predict.tree <- predict(fit.ctree, test)
+predict.tree <- predict(fit.tree, test)
 
 #build a dataframe with results
-submit.tree <- data.frame(datetime = test$datetime, count=predict.ctree)
+submit.tree <- data.frame(datetime = test$datetime, count=predict.tree)
 
 #write results to .csv for submission
 write.csv(submit.tree, file="submit_tree_modelA.csv",row.names=FALSE)
 
-# Kaggle score = 0.61165
-# Question: Why is this exactly the same score as the CONDITIONAL INFERENCE TREE MODEL B?
+
+# Kaggle score = [...]
 
 ################################### MODEL B #####################################
 
@@ -242,16 +265,16 @@ fit <- rpart(count ~ season + holiday + workingday + weather + workingday + weat
 rpart.plot(fit)
 
 # build model
-fit.ctree <- cforest(fit, data=train)
+fit.tree <- forest(fit, data=train)
 
 # run model against test data set
-predict.ctree <- predict(fit.ctree, test)
+predict.tree <- predict(fit.tree, test)
 
 #build a dataframe with results
-submit.ctree <- data.frame(datetime = test$datetime, count=predict.ctree)
+submit.tree <- data.frame(datetime = test$datetime, count=predict.tree)
 
 #write results to .csv for submission
-write.csv(submit.ctree, file="submit_tree_modelB.csv",row.names=FALSE)
+write.csv(submit.tree, file="submit_tree_modelB.csv",row.names=FALSE)
 
 # Kaggle score = [...]
 
@@ -259,31 +282,39 @@ write.csv(submit.ctree, file="submit_tree_modelB.csv",row.names=FALSE)
 ################################## RANDOM FOREST ################################# 
 ##################################################################################
 
+# Question: 
+
 # Set random seed so results are reproducible (otherwise different each time you run). The number inside isn't important.
 
 # set seed for reproducibility (otherwise random each run)
 set.seed(415)
 
 # create formula
-fit <- randomForest(as.factor(count) ~ season + holiday + workingday + weather + workingday + weather + temp + atemp + humidity + windspeed + weekday + hour,
+fit <- randomForest(as.factor(count) ~ season + holiday + workingday + weather + workingday + weather + temp + atemp + humidity + windspeed + day + hour,
               data=train, 
               importance=TRUE, 
               ntree=2000)
+# Question: Error:
+# Error in eval(expr, envir, enclos) : object 'day' not found
 
 # plot
 varImpPlot(fit)
+# Question: Error: 
+# Error in varImpPlot(fit) : 
+# This function only works for objects of class `randomForest'
 
 # build model
-fit.ctree <- cforest(fit, data=train)
+fit.tree <- forest(fit, data=train)
+# Question: Error: could not find function "forest"
 
 # run model against test data set
-predict.ctree <- predict(fit.ctree, test)
+predict.tree <- predict(fit.tree, test)
 
 #build a dataframe with results
-submit.ctree <- data.frame(datetime = test$datetime, count=predict.ctree)
+submit.tree <- data.frame(datetime = test$datetime, count=predict.tree)
 
 #write results to .csv for submission
-write.csv(submit.ctree, file="submit_ctree_v1.csv",row.names=FALSE)
+write.csv(submit.tree, file="submit_ctree_v1.csv",row.names=FALSE)
 
 # Kaggle score = [...]
 
@@ -293,12 +324,14 @@ write.csv(submit.ctree, file="submit_ctree_v1.csv",row.names=FALSE)
 
 ################################### MODEL A #####################################
 
+# Question: What's wrong with the fit formula?
+
 # set seed for reproducibility (otherwise random each run)
 set.seed(415)
 
 # create formula
-fit <- count ~ season + holiday + workingday + weather + workingday + weather + temp + atemp + humidity + windspeed + weekday + hour
-               data = train 
+fit <- count ~ season + holiday + workingday + weather + workingday + weather + temp + atemp + humidity + windspeed + weekday + hour,
+               data = train, 
                controls=cforest_unbiased(ntree=2000, mtry=3)
 
 # build model
@@ -338,11 +371,15 @@ predict.ctree <- predict(fit.ctree, test)
 submit.ctree <- data.frame(datetime = test$datetime, count=predict.ctree)
 
 #write results to .csv for submission
-write.csv(submit.ctree, file="submit_ctree_v1.csv",row.names=FALSE)
+write.csv(submit.ctree, file="ctree_modelB.csv",row.names=FALSE)
 
 # Kaggle score = 0.61165
 
+##################################################################################
+################################## CONCLUSIONS ################################### 
+##################################################################################
 
+# How can I observe the trees I've created to draw conclusions?
 
 ##################################################################################
 ################################ RESOURCES & TIPS ################################ 
