@@ -24,7 +24,10 @@ setwd('~/Documents/Programming Projects/Data Sets/bike_all/')
 train = read.csv("train.csv", stringsAsFactors = FALSE)
 test = read.csv("test.csv", stringsAsFactors = FALSE)
 
-
+# Plot helper-functions
+posn.d <- position_dodge(width = 0.1)
+posn.jd <- position_jitterdodge(jitter.width = 0.1, dodge.width = 0.2)
+posn.j <- position_jitter(width = 0.2)
 
 ##################################################################################
 ################################ OVERVIEW OF DATA ################################ 
@@ -39,7 +42,7 @@ summary(train)
 plot(train$count, main="User Count Over Time", sub="Full Training Data Set",
      xlab="Observations", ylab="Count")
 
-# Use the	pairs	command to plot	all	the	variables	of the data set against each	other. 
+# Use the pairs command to plot all variables against eachother
 # Use slice to plot only the first 100 observations.	
 pairs(train %>% slice(1:100))
 
@@ -47,7 +50,7 @@ pairs(train %>% slice(1:100))
 ################################ INITIAL INSIGHTS ################################ 
 ##################################################################################
 
-# Registered user behavior may differ from and casual user behavior.
+# Registered user behavior may differ from casual user behavior.
 
 # Day of week (workday vs weekend) may yield different usage.
 
@@ -57,7 +60,7 @@ pairs(train %>% slice(1:100))
 
 # Temp and atemp may be tandem or else hypothesis is atemp may be more important.
 
-# Overall usage trends rise from 2011 to 2012
+# Overall usage trends rise from 2011 to 2012.
 
 # Wind speed == 0 can be consider missing data. Could use random forest to predict these values.
 
@@ -116,11 +119,6 @@ head(combi)
 # when using sample(), set seed to get the same random sample each time the code is run. 
 # this helps reproducing the same results when the code is shared with someone.
 set.seed(10012)
-
-# Plot helper-functions
-posn.d <- position_dodge(width = 0.1)
-posn.jd <- position_jitterdodge(jitter.width = 0.1, dodge.width = 0.2)
-posn.j <- position_jitter(width = 0.2)
 
 # Plot
 ggplot(train %>% 
@@ -193,6 +191,7 @@ ggplot(train, aes(x = day, y = count, col = holiday)) +
   geom_point(size=3, alpha = 0.05, position = posn.jd)
 
 # There are approximately zero users on Level 4 "weather" days
+
 ggplot(train, aes(x = temp, col = weather, fill = weather))+
   geom_freqpoly()
 
