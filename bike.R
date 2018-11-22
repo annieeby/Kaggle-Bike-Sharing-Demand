@@ -36,43 +36,28 @@ head(train)
 summary(train)
 
 # See how count varies over entire timeframe
-plot(train$count, main="Count of Users Over Time", sub="Full Train Data Set",
+plot(train$count, main="User Count Over Time", sub="Full Training Data Set",
      xlab="Observations", ylab="Count")
 
 # Use the	pairs	command to plot	all	the	variables	of the data set against each	other. 
 # Use slice to plot only the first 100 observations.	
 pairs(train %>% slice(1:100))
 
-
-
 ##################################################################################
 ################################ INITIAL INSIGHTS ################################ 
 ##################################################################################
 
-# User behavior shows positive correlation with good weather
+# Registered user behavior may differ from and casual user behavior.
 
-ggplot(train, aes(x = temp, y = count, col = weather)) +
-  geom_point(size=3, alpha = 0.1, position = posn.jd)
+# Day of week (workday vs weekend) may yield different usage.
 
-# Registered user rentals appear to peak during commute hours
+# Hour of day may yield different usage. Combine with day of week for more refined usage info.
 
-ggplot(train, aes(x = hour, y = count, col = registered)) +
-  geom_point(size=3, alpha = 0.1, position = posn.jd)
+# Windspeed, humidity, and temperature may yield different usage.
 
-# Casual:Registered user proportion appears to be higher during holidays
+# Temp and atemp may be tandem or else hypothesis is atemp may be more important.
 
-ggplot(train, aes(x = holiday, y = count, col = registered)) +
-  geom_point(size=3, alpha = 0.1, position = posn.jd)
-
-# Hourly usage differs for working-days vs non-working-days
-
-ggplot(train, aes(x = hour, y = count, col = workingday)) +
-  geom_point(size=3, alpha = 0.1, position = posn.jd)
-
-# Monday holidays are popular for bike rentals
-
-ggplot(train, aes(x = day, y = count, col = holiday)) +
-  geom_point(size=3, alpha = 0.05, position = posn.jd)
+# Overall usage trends rise from 2011 to 2012
 
 
 
@@ -111,7 +96,7 @@ str(combi)
 
 #################################### DATE/TIME ###################################
 
-# Use lubridate with datetime to create new variables: month, weekday, and hour
+# Use lubridate with datetime to create new variables: month, day, and hour
 
 combi = combi %>%
   mutate(datetime = as.POSIXct(datetime, format="%Y-%m-%d %H:%M:%S"),
@@ -127,11 +112,14 @@ head(combi)
 
 # Use a visual to determine distinct dayparts.
 
-# Plot helper-functions
 # when using sample(), set seed to get the same random sample each time the code is run. 
 # this helps reproducing the same results when the code is shared with someone.
 set.seed(10012)
-posn.jd <- position_jitterdodge(0.5, 0, 0.6)
+
+# Plot helper-functions
+posn.d <- position_dodge(width = 0.1)
+posn.jd <- position_jitterdodge(jitter.width = 0.1, dodge.width = 0.2)
+posn.j <- position_jitter(width = 0.2)
 
 # Plot
 ggplot(train %>% 
@@ -180,14 +168,37 @@ test <- combi[10887:17379,]
 ################################# MANUAL ANALYSIS ################################ 
 ##################################################################################
 
-# Count by day
+
+# User behavior shows positive correlation with good weather
+
+ggplot(train, aes(x = temp, y = count, col = weather)) +
+  geom_point(size=3, alpha = 0.1, position = posn.jd)
+
+# Registered user rentals appear to peak during commute hours
+
+ggplot(train, aes(x = hour, y = count, col = registered)) +
+  geom_point(size=3, alpha = 0.1, position = posn.jd)
+
+# Casual:Registered user proportion appears to be higher during holidays
+
+ggplot(train, aes(x = holiday, y = count, col = registered)) +
+  geom_point(size=3, alpha = 0.1, position = posn.jd)
+
+# Hourly usage differs for working-days vs non-working-days
+
+ggplot(train, aes(x = hour, y = count, col = workingday)) +
+  geom_point(size=3, alpha = 0.1, position = posn.jd)
+
+# Monday holidays are popular for bike rentals
+
+ggplot(train, aes(x = day, y = count, col = holiday)) +
+  geom_point(size=3, alpha = 0.05, position = posn.jd)
+
+# Sunday is lowest use day, nearly 10% lower than Thursday, Friday, Saturday
+# (highest days); Monday, Tuedsay, Wednesday are in-between, and about equal
+
 aggregate(train[,"count"],list(train$day),mean)
 summary(aggregate(train[,"count"],list(train$day),mean))
-
-################################### OBSERVATIONS ################################# 
-
-# Sunday is lowest day, nearly 10% lower than Thursday, Friday, Saturday
-# (highest days); Monday, Tuedsay, Wednesday are in-between, and about equal
 
 
 
