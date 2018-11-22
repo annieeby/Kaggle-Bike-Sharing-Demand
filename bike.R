@@ -17,7 +17,7 @@
 # load libraries using pacman to make the file more easily shareable
 if(!require(pacman)){install.packages('pacman')}
 pacman::p_load(dplyr, tidyr, lubridate, ggplot2, caret,randomForest, rpart, 
-               rpart.plot, RColorBrewer, rattle, party)
+               rpart.plot, RColorBrewer, rattle, party, Hmisc)
 
 # set working directory and files; read.csv automatically makes strings into factors; override this.
 setwd('~/Documents/Programming Projects/Data Sets/bike_all/')
@@ -59,6 +59,7 @@ pairs(train %>% slice(1:100))
 
 # Overall usage trends rise from 2011 to 2012
 
+# Wind speed == 0 can be consider missing data. Could use random forest to predict these values.
 
 
 ##################################################################################
@@ -201,45 +202,7 @@ ggplot(train, aes(x = temp, col = weather, fill = weather))+
 aggregate(train[,"count"],list(train$day),mean)
 summary(aggregate(train[,"count"],list(train$day),mean))
 
-################################## OTHER PLOTS ##################################
 
-# These plots are for practice, and are not included in the main "Manual Analysis" 
-# because they are, for the most part, indecipherable.
-
-ggplot(train, aes(x = hour,  y = count, col = daypart))+
-  geom_point(alpha=.7) + 
-  geom_smooth()
-
-ggplot(train, aes(x = temp,  y = humidity, col = season))+
-  geom_point(alpha=.7) + 
-  geom_smooth()
-# Question: How can I change plot colors so hotter seasons are associated with warmer colors, 
-# and colder seasons are associated with cooler colors?
-
-ggplot(train, aes(x = casual, y = count, col = holiday))+
-  geom_point(alpha=.7) + 
-  geom_smooth()
-
-ggplot(train, aes(x = hour,  y = count, col = daypart))+
-  geom_line() + 
-  coord_fixed(0.02)
-
-############################## SIMILAR BAR PLOTS ################################
-
-# Question: How to get a numeric proportion of users in weather 1:2:3:4
-
-ggplot(train, aes(x = temp, col = weather, fill = weather))+
-  geom_histogram()
-
-ggplot(train, aes(x = temp, col = weather, fill = weather))+
-  geom_histogram()+
-  geom_freqpoly(col = "white")
-
-ggplot(train, aes(x = temp, col = weather, fill = weather))+
-  geom_bar()
-
-ggplot(train, aes(x = temp, col = weather, fill = weather))+
-  stat_bin()
 
 ##################################################################################
 ################################## RANDOM FOREST ################################# 
@@ -298,3 +261,95 @@ submit.ctree <- data.frame(datetime = test$datetime, count=predict.ctree)
 write.csv(submit.ctree, file="ctree_modelB.csv",row.names=FALSE)
 
 # Kaggle score = 0.61165
+
+##################################################################################
+################################### CONCLUSIONS ################################## 
+##################################################################################
+
+# Insert conclusions here
+
+
+##################################################################################
+################################### SCRATCHPAD ################################### 
+##################################################################################
+
+# These plots are for practice, and are not included in the main "Manual Analysis" 
+# because they are, for the most part, indecipherable.
+
+ggplot(train, aes(x = hour,  y = temp))+
+  geom_point(position = position_jitter(0.2))
+
+ggplot(train, aes(x = hour,  y = temp))+
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1))
+
+ggplot(train, aes(x = daypart,  y = count))+
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1))
+
+ggplot(train, aes(x = daypart,  y = count))+
+  stat_summary(fun.y = mean, geom = "point")+
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1),
+               geom = "errorbar", width = 0.3)
+
+smean.cl.normal() 
+mean_cl_normal()
+#not running
+
+ggplot(train, aes(x = hour,  y = count, col = daypart))+
+  geom_point(alpha=.7) + 
+  geom_smooth()
+
+ggplot(train, aes(x = temp,  y = count, col = weather))+
+  geom_point(alpha=.7) + 
+  geom_smooth()
+
+ggplot(train, aes(x = temp,  y = count, col = weather))+
+  geom_point(alpha=.7) + 
+  geom_smooth(se = FALSE)
+# se = FALSE
+
+ggplot(train, aes(x = temp,  y = count, col = weather))+
+  geom_point(alpha=.7) + 
+  stat_smooth(se = FALSE)
+# when to use stat_smooth vs geom_smooth?
+
+ggplot(train, aes(x = temp,  y = count, col = weather))+
+  geom_point(alpha=.7) + 
+  stat_smooth(method = "lm")
+# method = "lm"; other argument options:  fullrange = TRUE
+
+ggplot(train, aes(x = humidity,  y = count, col = weather))+
+  geom_point(alpha=.7) + 
+  geom_smooth(se = FALSE, span = 0.01)
+# not good with this data, but...
+# span argument controls alpha, degree of smoothing; smaller spans are more noisy
+
+ggplot(train, aes(x = temp,  y = humidity, col = season))+
+  geom_point(alpha=.7) + 
+  geom_smooth()
+# Question: How can I change plot colors so hotter seasons are associated with warmer colors, 
+# and colder seasons are associated with cooler colors?
+
+ggplot(train, aes(x = casual, y = count, col = holiday))+
+  geom_point(alpha=.7) + 
+  geom_smooth()
+
+ggplot(train, aes(x = hour,  y = count, col = daypart))+
+  geom_line() + 
+  coord_fixed(0.02)
+
+##################################################################################
+
+# Question: How to get a numeric proportion of users in weather 1:2:3:4
+
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  geom_histogram()
+
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  geom_histogram()+
+  geom_freqpoly(col = "white")
+
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  geom_bar()
+
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  stat_bin()
