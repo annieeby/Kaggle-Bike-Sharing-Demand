@@ -168,6 +168,9 @@ test <- combi[10887:17379,]
 ################################# MANUAL ANALYSIS ################################ 
 ##################################################################################
 
+# Question: All plots are getting error:
+# Error in .Call.graphics(C_palette2, .Call(C_palette2, NULL)) : 
+#   invalid graphics state
 
 # User behavior shows positive correlation with good weather
 
@@ -199,6 +202,12 @@ ggplot(train, aes(x = day, y = count, col = holiday)) +
 
 aggregate(train[,"count"],list(train$day),mean)
 summary(aggregate(train[,"count"],list(train$day),mean))
+
+# test
+
+ggplot(train, aes(x = season,  y = count, col = hour))+
+  geom_point(alpha=.7) + 
+  geom_smooth()
 
 
 
