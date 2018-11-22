@@ -123,12 +123,9 @@ posn.j <- position_jitter(width = 0.2)
 
 # Plot
 ggplot(train %>% 
-      slice(sample(1:nrow(train), 100)), # slice for selecting a sample of rows
+      slice(sample(1:nrow(train), 5000)), # slice for selecting a sample of rows
       aes(x = hour, y = count, col = workingday)) +
       geom_point(size=3, alpha = 0.1, position = posn.jd)
-# Question: Error: Don't know how to automatically pick scale for object of type
-# function. Defaulting to continuous. Error: Column `x` must be a 1d atomic
-# vector or a list Call `rlang::last_error()` to see a backtrace
 
 #create daypart column with five levels
 #6AM - 10AM = 1
@@ -168,9 +165,6 @@ test <- combi[10887:17379,]
 ################################# MANUAL ANALYSIS ################################ 
 ##################################################################################
 
-# Question: All plots are getting error:
-# Error in .Call.graphics(C_palette2, .Call(C_palette2, NULL)) : 
-#   invalid graphics state
 
 # User behavior shows positive correlation with good weather
 
@@ -197,19 +191,55 @@ ggplot(train, aes(x = hour, y = count, col = workingday)) +
 ggplot(train, aes(x = day, y = count, col = holiday)) +
   geom_point(size=3, alpha = 0.05, position = posn.jd)
 
+# There are approximately zero users on Level 4 "weather" days
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  geom_freqpoly()
+
 # Sunday is lowest use day, nearly 10% lower than Thursday, Friday, Saturday
 # (highest days); Monday, Tuedsay, Wednesday are in-between, and about equal
 
 aggregate(train[,"count"],list(train$day),mean)
 summary(aggregate(train[,"count"],list(train$day),mean))
 
-# test
+################################## OTHER PLOTS ##################################
 
-ggplot(train, aes(x = season,  y = count, col = hour))+
+# These plots are for practice, and are not included in the main "Manual Analysis" 
+# because they are, for the most part, indecipherable.
+
+ggplot(train, aes(x = hour,  y = count, col = daypart))+
   geom_point(alpha=.7) + 
   geom_smooth()
 
+ggplot(train, aes(x = temp,  y = humidity, col = season))+
+  geom_point(alpha=.7) + 
+  geom_smooth()
+# Question: How can I change plot colors so hotter seasons are associated with warmer colors, 
+# and colder seasons are associated with cooler colors?
 
+ggplot(train, aes(x = casual, y = count, col = holiday))+
+  geom_point(alpha=.7) + 
+  geom_smooth()
+
+ggplot(train, aes(x = hour,  y = count, col = daypart))+
+  geom_line() + 
+  coord_fixed(0.02)
+
+############################## SIMILAR BAR PLOTS ################################
+
+# Question: How to get a numeric proportion of users in weather 1:2:3:4
+
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  geom_histogram()
+
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  geom_histogram()+
+  geom_freqpoly(col = "white")
+
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  geom_bar()
+
+ggplot(train, aes(x = temp, col = weather, fill = weather))+
+  stat_bin()
 
 ##################################################################################
 ################################## RANDOM FOREST ################################# 
